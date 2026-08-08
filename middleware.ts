@@ -12,6 +12,16 @@ function bufToHex(buf: ArrayBuffer): string {
     .join('');
 }
 
+/** Constant-time comparison for two equal-length Uint8Arrays. */
+function constantTimeEquals(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.byteLength !== b.byteLength) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.byteLength; i++) {
+    mismatch |= a[i] ^ b[i];
+  }
+  return mismatch === 0;
+}
+
 /** Verify an HMAC-signed token using Web Crypto API (Edge-compatible) */
 async function verifyToken(token: string, accessCode: string): Promise<boolean> {
   const dotIndex = token.indexOf('.');
@@ -54,13 +64,25 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Server-to-server auth: accept x-access-code header or Authorization: Bearer <code>.
+  // This lets upstream callers (e.g. the Finance sidecar) authenticate without cookies.
+  const headerCode = request.headers.get('x-access-code');
+  const authHeader = request.headers.get('authorization');
+  const bearerCode = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined;
+  const suppliedCode = headerCode || bearerCode;
+  if (suppliedCode) {
+    if (constantTimeEquals(encode(suppliedCode), encode(accessCode))) {
+      return NextResponse.next();
+    }
+  }
+
   // Check cookie — validate HMAC signature, not just existence
   const cookie = request.cookies.get('openmaic_access');
   if (cookie?.value && (await verifyToken(cookie.value, accessCode))) {
     return NextResponse.next();
   }
 
-  // API requests without valid cookie → 401
+  // API requests without valid auth → 401
   if (pathname.startsWith('/api/')) {
     return NextResponse.json(
       { success: false, errorCode: 'INVALID_REQUEST', error: 'Access code required' },
