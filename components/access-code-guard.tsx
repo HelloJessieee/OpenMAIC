@@ -30,11 +30,11 @@ export function AccessCodeGuard({ children }: { children: ReactNode }) {
       }
     }
 
-    async function autoVerifyFromUrl() {
-      if (typeof window === 'undefined') return;
+    async function autoVerifyFromUrl(): Promise<boolean> {
+      if (typeof window === 'undefined') return false;
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code') || params.get('access_code');
-      if (!code) return;
+      if (!code) return false;
 
       try {
         const res = await fetch('/api/access-code/verify', {
@@ -42,7 +42,7 @@ export function AccessCodeGuard({ children }: { children: ReactNode }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code }),
         });
-        if (!res.ok) return;
+        if (!res.ok) return false;
 
         // Remove code from URL without reloading the page.
         params.delete('code');
@@ -57,14 +57,16 @@ export function AccessCodeGuard({ children }: { children: ReactNode }) {
         if (!cancelled) {
           setStatus({ enabled: true, authenticated: true, loading: false });
         }
+        return true;
       } catch {
-        // Ignore auto-verify errors; fall through to normal status check.
+        return false;
       }
     }
 
     async function bootstrap() {
-      await autoVerifyFromUrl();
-      if (!cancelled) {
+      const verified = await autoVerifyFromUrl();
+      // Only fall back to the status endpoint if URL auto-verify did not succeed.
+      if (!cancelled && !verified) {
         await checkStatus();
       }
     }
