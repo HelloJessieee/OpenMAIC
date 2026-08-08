@@ -1,0 +1,67 @@
+# Render Blueprint for OpenMAIC sidecar (Finance Academy BIWS classrooms)
+#
+# Deploys:
+#   - Render PostgreSQL for server-backed persistence
+#   - Render Web Service running OpenMAIC from this repo's Dockerfile
+#
+# Usage:
+#   1. Place this file at the root of your OpenMAIC fork (e.g. HelloJessieee/OpenMAIC).
+#   2. Render Dashboard → Blueprints → New Blueprint Instance.
+#   3. Select the fork repo. Fill the prompted secrets. IMPORTANT:
+#      PERSISTENCE_DEV_TOKEN and NEXT_PUBLIC_PERSISTENCE_TOKEN must be the
+#      same random string.
+#   4. After first deploy, bind a custom domain (recommended) and update
+#      Finance / Netlify env vars.
+#
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: postgres
+    name: openmaic-postgres
+    plan: starter
+    ipAllowList: []
+    # Free PostgreSQL on Render sleeps after 90 days; use starter for production.
+
+  - type: web
+    name: openmaic-sidecar
+    runtime: docker
+    # When this Blueprint lives in the OpenMAIC fork, Render auto-deploys from
+    # that repo. No explicit `repo` field needed.
+    plan: starter
+    healthCheckPath: /api/health
+    disk:
+      name: openmaic-data
+      mountPath: /app/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: HOSTNAME
+        value: "0.0.0.0"
+      - key: DEFAULT_MODEL
+        value: openai:gpt-4o-mini
+      - key: OPENAI_BASE_URL
+        value: https://api.openai.com/v1
+      - key: ALLOW_LOCAL_NETWORKS
+        value: "true"
+      # Build-time + runtime flag: enable server-backed persistence.
+      - key: NEXT_PUBLIC_PERSISTENCE
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: openmaic-postgres
+          property: connectionString
+      # --- Secrets (Render will prompt for these during Blueprint setup) ---
+      - key: OPENAI_API_KEY
+        sync: false
+      # Site-level password. All sidecar routes (including /classroom/:id) require it.
+      - key: ACCESS_CODE
+        sync: false
+      # Server-side persistence token. Must equal NEXT_PUBLIC_PERSISTENCE_TOKEN below.
+      - key: PERSISTENCE_DEV_TOKEN
+        sync: false
+      # Same value as PERSISTENCE_DEV_TOKEN; compiled into the browser bundle.
+      - key: NEXT_PUBLIC_PERSISTENCE_TOKEN
+        sync: false
