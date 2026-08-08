@@ -15,13 +15,15 @@
 #
 # Docs: https://render.com/docs/blueprint-spec
 
-services:
-  - type: postgres
-    name: openmaic-postgres
-    plan: starter
+# Postgres databases must be defined in the top-level `databases` list.
+databases:
+  - name: openmaic-postgres
+    plan: basic-256mb
     ipAllowList: []
-    # Free PostgreSQL on Render sleeps after 90 days; use starter for production.
+    # Use basic-256mb ($7/mo) or larger for production.
+    # `starter` is a legacy plan and cannot be used for new databases.
 
+services:
   - type: web
     name: openmaic-sidecar
     runtime: docker
