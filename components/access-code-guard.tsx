@@ -12,23 +12,65 @@ export function AccessCodeGuard({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/access-code/status')
-      .then((res) => res.json())
-      .then((data) => {
+
+    async function checkStatus() {
+      try {
+        const res = await fetch('/api/access-code/status');
+        const data = await res.json();
+        if (cancelled) return;
+        setStatus({
+          enabled: data.enabled,
+          authenticated: data.authenticated,
+          loading: false,
+        });
+      } catch {
+        if (cancelled) return;
+        // Default to requiring auth on error — safer than silently disabling
+        setStatus({ enabled: true, authenticated: false, loading: false });
+      }
+    }
+
+    async function autoVerifyFromUrl() {
+      if (typeof window === 'undefined') return;
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code') || params.get('access_code');
+      if (!code) return;
+
+      try {
+        const res = await fetch('/api/access-code/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code }),
+        });
+        if (!res.ok) return;
+
+        // Remove code from URL without reloading the page.
+        params.delete('code');
+        params.delete('access_code');
+        const newQuery = params.toString();
+        const newUrl =
+          window.location.pathname +
+          (newQuery ? `?${newQuery}` : '') +
+          window.location.hash;
+        window.history.replaceState({}, '', newUrl);
+
         if (!cancelled) {
-          setStatus({
-            enabled: data.enabled,
-            authenticated: data.authenticated,
-            loading: false,
-          });
+          setStatus({ enabled: true, authenticated: true, loading: false });
         }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          // Default to requiring auth on error — safer than silently disabling
-          setStatus({ enabled: true, authenticated: false, loading: false });
-        }
-      });
+      } catch {
+        // Ignore auto-verify errors; fall through to normal status check.
+      }
+    }
+
+    async function bootstrap() {
+      await autoVerifyFromUrl();
+      if (!cancelled) {
+        await checkStatus();
+      }
+    }
+
+    bootstrap();
+
     return () => {
       cancelled = true;
     };
