@@ -80,6 +80,19 @@ export function AccessCodeGuard({ children }: { children: ReactNode }) {
 
   const needsAuth = !status.loading && status.enabled && !status.authenticated;
 
+  // Block rendering children until we know the auth state.
+  // This prevents the classroom page from firing API requests before the
+  // access-code cookie has been set via the URL ?code=... auto-verify flow.
+  if (status.loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center text-muted-foreground">
+          <p>Checking access...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {needsAuth && (

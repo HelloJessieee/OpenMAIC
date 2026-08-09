@@ -42,8 +42,10 @@ services:
         value: "3000"
       - key: HOSTNAME
         value: "0.0.0.0"
+      # gpt-4o-mini is cheaper but may produce incomplete scenes for complex
+      # BIWS material. Use openai:gpt-4o for higher quality (more expensive).
       - key: DEFAULT_MODEL
-        value: openai:gpt-4o-mini
+        value: openai:gpt-4o
       - key: OPENAI_BASE_URL
         value: https://api.openai.com/v1
       - key: ALLOW_LOCAL_NETWORKS
@@ -55,6 +57,9 @@ services:
         fromDatabase:
           name: openmaic-postgres
           property: connectionString
+      # Allow Finance Academy to embed the sidecar in an iframe.
+      - key: ALLOWED_FRAME_ANCESTORS
+        value: "https://ringingcareer.com https://*.ringingcareer.com"
       # --- Secrets (Render will prompt for these during Blueprint setup) ---
       - key: OPENAI_API_KEY
         sync: false
