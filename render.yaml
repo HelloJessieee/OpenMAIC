@@ -46,6 +46,10 @@ services:
       # BIWS material. Use openai:gpt-4o for higher quality (more expensive).
       - key: DEFAULT_MODEL
         value: openai:gpt-4o
+      # Route every generation stage to gpt-4o so outlines, scenes, quizzes,
+      # agent profiles and actions all use the strongest model.
+      - key: MODEL_ROUTES
+        value: '{"generate-classroom":"openai:gpt-4o","scene-outlines-stream":"openai:gpt-4o","scene-content":"openai:gpt-4o","scene-content:slide":"openai:gpt-4o","scene-content:quiz":"openai:gpt-4o","scene-content:interactive":"openai:gpt-4o","scene-content:pbl":"openai:gpt-4o","scene-actions":"openai:gpt-4o","agent-profiles":"openai:gpt-4o","quiz-grade":"openai:gpt-4o"}'
       - key: OPENAI_BASE_URL
         value: https://api.openai.com/v1
       - key: ALLOW_LOCAL_NETWORKS
