@@ -260,7 +260,11 @@ Rules:
       "type": "slide",
       "title": "Introduction",
       "description": "Welcome students and introduce the core concept.",
-      "keyPoints": ["Context", "Agenda", "Goals"],
+      "keyPoints": [
+        "Define the core concept and why it matters for the learner",
+        "Preview the learning objectives and scene flow",
+        "State the practical skill or takeaway by the end of the course"
+      ],
       "order": 1
     },
     {
@@ -301,7 +305,7 @@ Rules:
 | type              | string                   | ✅       | `"slide"`, `"quiz"`, `"interactive"`, or `"pbl"`                                                 |
 | title             | string                   | ✅       | Scene title, concise and clear                                                                   |
 | description       | string                   | ✅       | 1-2 sentences describing teaching purpose                                                        |
-| keyPoints         | string[]                 | ✅       | 3-5 core points                                                                                  |
+| keyPoints         | string[]                 | ✅       | 5-8 substantive points for slide scenes (each a complete bullet phrase, not a one-word label); 3-5 core points for other scene types |
 | teachingObjective | string                   | ❌       | Corresponding learning objective                                                                 |
 | estimatedDuration | number                   | ❌       | Estimated duration (seconds)                                                                     |
 | order             | number                   | ✅       | Sort order, starting from 1                                                                      |
@@ -381,6 +385,7 @@ Omit `scenarioRoleplay` and `scenarioBrief` entirely for ordinary build-an-artef
 6. `interactive` scenes must include `widgetType` and `widgetOutline` (preferred). `interactiveConfig` is deprecated and only accepted for backwards compatibility.
 7. `pbl` scenes must include `pblConfig` with `projectTopic`, `projectDescription`, `targetSkills`, `issueCount`.
 8. Arrange scenes by inferred duration (typically 1-2 scenes per minute). Insert quizzes at appropriate points. Use interactive scenes sparingly (max 1-2 per course).
-9. **Language**: Infer from the user's requirement text and context. Output all scene content in the inferred language.
-10. Regardless of information completeness, always output conforming JSON - do not ask questions or request more information
+9. **Slide keyPoints must be substantive**: For every `slide` scene, write `keyPoints` as complete, self-contained bullet phrases (not one-word labels like "Context" or "Goals"). Each keyPoint should contain enough detail that a slide designer can expand it into a rich slide with 5-8 bullets.
+10. **Language**: Infer from the user's requirement text and context. Output all scene content in the inferred language.
+11. Regardless of information completeness, always output conforming JSON - do not ask questions or request more information
 11. **No teacher identity on slides**: Scene titles and keyPoints must be neutral and topic-focused. Never include the teacher's name or role (e.g., avoid "Teacher Wang's Tips", "Teacher's Wishes"). Use generic labels like "Tips", "Summary", "Key Takeaways" instead.
