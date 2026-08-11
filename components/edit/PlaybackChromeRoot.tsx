@@ -1060,6 +1060,10 @@ export const PlaybackChromeRoot = forwardRef<PlaybackChromeRootHandle, PlaybackC
       } else {
         const wasCompleted = playbackCompleted;
         setPlaybackCompleted(false);
+        // Auto-unmute on first play so users don't get stuck with a muted player.
+        if (ttsEnabled && ttsMuted) {
+          setTTSMuted(false);
+        }
         // Starting playback - create/reuse lecture session
         if (currentScene && chatAreaRef.current) {
           const sessionId = await chatAreaRef.current.startLecture(currentScene.id);
@@ -1074,7 +1078,7 @@ export const PlaybackChromeRoot = forwardRef<PlaybackChromeRootHandle, PlaybackC
           engine.continuePlayback();
         }
       }
-    }, [playbackCompleted, currentScene, saveSceneResumePosition]);
+    }, [playbackCompleted, currentScene, saveSceneResumePosition, ttsEnabled, ttsMuted, setTTSMuted]);
 
     // get scene information
     const isPendingScene = currentSceneId === PENDING_SCENE_ID;
