@@ -59,8 +59,14 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Whitelist: access-code endpoints, health check
-  if (pathname.startsWith('/api/access-code/') || pathname === '/api/health') {
+  // Whitelist: access-code endpoints, health check, and classroom media assets.
+  // Classroom media (audio/video) must be loadable by browser <audio>/<video>
+  // tags which cannot carry custom headers or cross-site cookies.
+  if (
+    pathname.startsWith('/api/access-code/') ||
+    pathname === '/api/health' ||
+    pathname.startsWith('/api/classroom-media/')
+  ) {
     return NextResponse.next();
   }
 
