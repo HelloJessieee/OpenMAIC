@@ -31,6 +31,7 @@ import {
   replaceMediaPlaceholders,
   generateTTSForClassroom,
 } from '@/lib/server/classroom-media-generation';
+import { getServerTTSProviders } from '@/lib/server/provider-config';
 import { withGenerationRetry } from '@/lib/generation/generation-retry';
 import { buildVideoManifestFromOutlines } from '@/lib/media/video-manifest';
 import type { UserRequirements } from '@/lib/types/generation';
@@ -668,7 +669,12 @@ export async function generateClassroom(
   }
 
   // Phase: TTS generation
-  if (input.enableTTS) {
+  // Default to generating TTS when a managed provider is configured and the caller
+  // did not explicitly opt out (enableTTS === false).
+  const hasManagedTTSProvider = Object.entries(getServerTTSProviders()).some(
+    ([id, info]) => !info.disabled,
+  );
+  if (input.enableTTS !== false && hasManagedTTSProvider) {
     await options.onProgress?.({
       step: 'generating_tts',
       progress: 94,
