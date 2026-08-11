@@ -59,10 +59,12 @@ async function downloadToBuffer(url: string): Promise<Buffer> {
   return Buffer.from(await resp.arrayBuffer());
 }
 
-function mediaServingUrl(_baseUrl: string, classroomId: string, subPath: string): string {
-  // Use relative URLs so classrooms remain playable regardless of which domain
-  // or port they are served from (Render custom domain, iframe, localhost, etc.).
-  return `/api/classroom-media/${classroomId}/${subPath}`;
+function mediaServingUrl(baseUrl: string, classroomId: string, subPath: string): string {
+  // Use absolute URLs so embedded classrooms (e.g. Finance sidecar iframe) and
+  // direct links always resolve media against the OpenMAIC deployment that owns
+  // the files, regardless of which page hosts the <audio>/<video> element.
+  const normalized = baseUrl.replace(/\/$/, '');
+  return `${normalized}/api/classroom-media/${classroomId}/${subPath}`;
 }
 
 // ---------------------------------------------------------------------------

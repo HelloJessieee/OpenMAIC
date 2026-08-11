@@ -64,10 +64,15 @@ export class AudioPlayer {
         this.audio.addEventListener('ended', () => {
           this.onEndedCallback?.();
         });
+        this.audio.addEventListener('error', (e) => {
+          log.error(`[AudioPlayer] audio error for ${audioUrl}:`, e);
+        });
         await this.audio.play();
         if (requestToken !== this.requestToken) return false;
         this.audio.playbackRate = this.playbackRate;
-        log.info(`[AudioPlayer] started playback from audioUrl: ${audioUrl}`);
+        log.info(
+          `[AudioPlayer] started playback from audioUrl: ${audioUrl} resolved=${this.audio.currentSrc} volume=${this.audio.volume} muted=${this.audio.muted}`,
+        );
         return true;
       }
 

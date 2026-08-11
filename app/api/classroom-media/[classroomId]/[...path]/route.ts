@@ -25,14 +25,16 @@ export async function GET(
   { params }: { params: Promise<{ classroomId: string; path: string[] }> },
 ) {
   const { classroomId, path: pathSegments } = await params;
+  const joined = pathSegments.join('/');
+  log.info(`Serving classroom media [classroomId=${classroomId}, path=${joined}]`);
 
   // Validate classroomId
   if (!isValidClassroomId(classroomId)) {
+    log.warn(`Invalid classroom ID: ${classroomId}`);
     return NextResponse.json({ error: 'Invalid classroom ID' }, { status: 400 });
   }
 
   // Validate path segments — no traversal
-  const joined = pathSegments.join('/');
   if (joined.includes('..') || pathSegments.some((s) => s.includes('\0'))) {
     return NextResponse.json({ error: 'Invalid path' }, { status: 400 });
   }
