@@ -49,6 +49,7 @@ export class AudioPlayer {
    */
   public async play(audioId: string, audioUrl?: string): Promise<boolean> {
     const requestToken = ++this.requestToken;
+    log.info(`[AudioPlayer] play called audioId=${audioId} audioUrl=${audioUrl ?? 'none'}`);
     try {
       // 1. Try audioUrl first (server-generated TTS)
       if (audioUrl) {
@@ -66,6 +67,7 @@ export class AudioPlayer {
         await this.audio.play();
         if (requestToken !== this.requestToken) return false;
         this.audio.playbackRate = this.playbackRate;
+        log.info(`[AudioPlayer] started playback from audioUrl: ${audioUrl}`);
         return true;
       }
 
@@ -110,6 +112,7 @@ export class AudioPlayer {
         await this.audio.play();
       } catch (playError) {
         URL.revokeObjectURL(blobUrl);
+        log.warn('[AudioPlayer] blob playback failed:', playError);
         throw playError;
       }
       if (requestToken !== this.requestToken) {
@@ -120,8 +123,8 @@ export class AudioPlayer {
       this.audio.playbackRate = this.playbackRate;
       return true;
     } catch (error) {
-      log.error('Failed to play audio:', error);
-      throw error;
+      log.error('[AudioPlayer] Failed to play audio:', error);
+      return false;
     }
   }
 

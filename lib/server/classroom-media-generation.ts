@@ -59,8 +59,10 @@ async function downloadToBuffer(url: string): Promise<Buffer> {
   return Buffer.from(await resp.arrayBuffer());
 }
 
-function mediaServingUrl(baseUrl: string, classroomId: string, subPath: string): string {
-  return `${baseUrl}/api/classroom-media/${classroomId}/${subPath}`;
+function mediaServingUrl(_baseUrl: string, classroomId: string, subPath: string): string {
+  // Use relative URLs so classrooms remain playable regardless of which domain
+  // or port they are served from (Render custom domain, iframe, localhost, etc.).
+  return `/api/classroom-media/${classroomId}/${subPath}`;
 }
 
 // ---------------------------------------------------------------------------
