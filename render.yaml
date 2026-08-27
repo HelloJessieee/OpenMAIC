@@ -79,9 +79,9 @@ services:
       - key: NEXT_PUBLIC_PERSISTENCE_TOKEN
         sync: false
       # --- TTS (server-side narration audio for generated classrooms) ---
-      # OpenMAIC uses a dedicated TTS provider, not the LLM key. You can reuse
-      # the same OpenAI key configured above; fill it in Render Dashboard env.
-      - key: TTS_OPENAI_BASE_URL
-        value: https://api.openai.com/v1
-      - key: TTS_OPENAI_API_KEY
+      # OpenMAIC uses a dedicated TTS provider, not the LLM key. This project
+      # uses ElevenLabs, so fill TTS_ELEVENLABS_API_KEY in Render Dashboard env.
+      - key: TTS_ELEVENLABS_BASE_URL
+        value: https://api.elevenlabs.io/v1
+      - key: TTS_ELEVENLABS_API_KEY
         sync: false
