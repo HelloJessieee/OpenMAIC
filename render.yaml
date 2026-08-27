@@ -62,6 +62,8 @@ services:
           name: openmaic-postgres
           property: connectionString
       # Allow Finance Academy to embed the sidecar in an iframe.
+      # Replace with your actual frontend origin(s), e.g.:
+      #   https://ringingcareer.com https://*.ringingcareer.com
       - key: ALLOWED_FRAME_ANCESTORS
         value: "https://ringingcareer.com https://*.ringingcareer.com"
       # --- Secrets (Render will prompt for these during Blueprint setup) ---
@@ -75,4 +77,11 @@ services:
         sync: false
       # Same value as PERSISTENCE_DEV_TOKEN; compiled into the browser bundle.
       - key: NEXT_PUBLIC_PERSISTENCE_TOKEN
+        sync: false
+      # --- TTS (server-side narration audio for generated classrooms) ---
+      # OpenMAIC uses a dedicated TTS provider, not the LLM key. You can reuse
+      # the same OpenAI key configured above; fill it in Render Dashboard env.
+      - key: TTS_OPENAI_BASE_URL
+        value: https://api.openai.com/v1
+      - key: TTS_OPENAI_API_KEY
         sync: false
