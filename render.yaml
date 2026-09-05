@@ -61,11 +61,10 @@ services:
         fromDatabase:
           name: openmaic-postgres
           property: connectionString
-      # Allow Finance Academy to embed the sidecar in an iframe.
-      # Replace with your actual frontend origin(s), e.g.:
-      #   https://ringingcareer.com https://*.ringingcareer.com
+      # Official OpenMAIC omits this → X-Frame-Options: SAMEORIGIN, so a
+      # third-party iframe (Finance Tech 课) is blocked and TTS never plays.
       - key: ALLOWED_FRAME_ANCESTORS
-        value: "https://ringingcareer.com https://*.ringingcareer.com"
+        value: "https://ringingcareer.com https://www.ringingcareer.com https://*.ringingcareer.com https://*.netlify.app"
       # --- Secrets (Render will prompt for these during Blueprint setup) ---
       - key: OPENAI_API_KEY
         sync: false

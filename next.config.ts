@@ -15,16 +15,22 @@ const nextConfig: NextConfig = {
     proxyClientMaxBodySize: '200mb',
   },
   async headers() {
-    const extraAncestors = process.env.ALLOWED_FRAME_ANCESTORS?.trim();
-    const frameAncestors = extraAncestors ? `'self' ${extraAncestors}` : "'self'";
+    // Official OpenMAIC defaults to frame-ancestors 'self' + X-Frame-Options:
+    // SAMEORIGIN. That is correct for the hosted site (open.maic.chat) because
+    // users play classrooms on the same origin. Finance Academy embeds the
+    // sidecar in a cross-origin iframe, so a missing ALLOWED_FRAME_ANCESTORS
+    // env silently produces a blank/silent classroom (browser blocks the
+    // frame before TTS can start). Keep a Finance-oriented fallback so a
+    // forgotten Render env cannot re-break embedding.
+    const financeFallback =
+      "https://ringingcareer.com https://www.ringingcareer.com https://*.ringingcareer.com https://*.netlify.app http://localhost:5173 http://127.0.0.1:5173 http://localhost:3000 http://127.0.0.1:3000";
+    const extraAncestors = process.env.ALLOWED_FRAME_ANCESTORS?.trim() || financeFallback;
+    const frameAncestors = `'self' ${extraAncestors}`;
 
     return [
       {
         source: '/(.*)',
         headers: [
-          // X-Frame-Options only supports SAMEORIGIN (no allow-list),
-          // so we omit it when custom ancestors are configured.
-          ...(!extraAncestors ? [{ key: 'X-Frame-Options', value: 'SAMEORIGIN' }] : []),
           {
             key: 'Content-Security-Policy',
             value: `frame-ancestors ${frameAncestors}`,
